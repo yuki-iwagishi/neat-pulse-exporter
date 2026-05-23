@@ -93,13 +93,6 @@ CSV はデバイス 1 台につき 1 行です。列はすべてのデバイス�
 
 プロファイル適用時、Pulse UI は設定を「locked by profile」として表示しますが、デバイス本体の UI から上書きは可能です。上書きされると Pulse UI に警告（「A locked profile setting has been changed on this device」）が表示されます。上書き値は `/endpoints/{id}/config` に反映されるため `effective.*` は正しい値を示しますが、**どのキーが上書き状態かは API から判定できません**。`_source.*` 列でデバイス由来かプロファイル由来かを確認できますが、上書き状態の検出には Pulse UI での目視確認が必要です。
 
-### 4. `office_hours`（スリープスケジュール）は書き込み専用
-
-スリープスケジュールのトグルと時刻範囲（内部キー名 `office_hours`、`office_hours_enabled`）は UI で設定でき監査ログにも記録されますが、いかなる Read API エンドポイントからも返されません。CSV にはエクスポートできないため、Excel 照合は手動で行う必要があります。Neat に報告済みです。
-
-### 5. その他の書き込み専用キー
-
-560 エンドポイント規模のテナントでの調査で、さらに **24 個のキー**が `office_hours` と同様に書き込み専用（Read API に含まれない）であることを確認しました：
 
 **Channel apps（16 個）** — アプリ別の有効化トグルは一切返されません：
 
@@ -121,7 +114,6 @@ ngmsEnabled                   settingsPassword
 ngmsFeatureToggle             settingsPasswordMode
 ```
 
-`settingsPassword` と Remote access パスワードはセキュリティ上の理由で省略されており、それ以外は Read API のギャップと見られます。`office_hours` 件とあわせて Neat に報告済みです。
 
 ### カバレッジの概要
 
