@@ -190,13 +190,10 @@ neat-pulse-exporter/
 │   └── workflows/
 │       └── ci.yml             # Syntax check + smoke test (Node 18/20/22)
 ├── docs/
-│   ├── api_findings.md        # Detailed notes on Pulse API behaviour
 │   ├── README.ja.md           # 日本語
 │   ├── README.ko.md           # 한국어
 │   ├── README.zh-TW.md        # 繁體中文
 │   └── README.zh-CN.md        # 简体中文
-├── examples/
-│   └── sample_output_columns.txt   # Representative CSV column inventory
 ├── public/
 │   └── index.html        # Single-file UI (no build step)
 ├── src/
