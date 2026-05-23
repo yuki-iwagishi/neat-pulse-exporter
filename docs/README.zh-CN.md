@@ -16,7 +16,6 @@
   - `config.*` — 设备本身写入的值
   - `profile.*` — 分配的配置文件中声明的值
   - `effective.*` — 设备优先、配置文件补充的合并值
-- 解码 base64 编码的 MAC / IPv4 / IPv6 / 网关字段，并以 GB 为单位显示存储空间。
 - 通过 Server-Sent Events 将进度实时推送至浏览器。
 - 自动遮蔽键名含有 `password`、`token`、`secret`、`apiKey`、`privateKey`、`credential` 的敏感值（`settingsPasswordRequired` 等布尔标志除外）。
 - CSV 添加 UTF-8 BOM，使 Excel 默认以 UTF-8 打开。
@@ -76,44 +75,6 @@ CSV 每台设备一行。列为所有设备键的并集，按字母顺序排列�
 ### 对应 Excel 表格的列
 
 默认情况下，API 返回的所有键均会成为列。若需配合 Excel 的固定列结构，最简单的方式是在 Excel 中使用 `VLOOKUP` / Power Query，或修改 `/api/export` 中的 `buildRow()` 函数，仅输出所需的键。
-
-## Pulse API 的已知限制
-
-以下为针对实际 Pulse API 调查确认的内容（2026 年 5 月）。
-
-### 1. 型号特定的键
-
-部分配置仅在设备型号支持时才会出现于 `/endpoints/{id}/config`。例如，`hdmiSleepSignal` 在 Neat Bar Pro 中有效，但在旧款 Neat Bar 中不包含。不支持的型号 `config.hdmiSleepSignal` 列会为空，但 `effective.*` 仍会以配置文件值补充（并不代表设备实际应用了该值）。
-
-### 2. 配置文件继承值在设备配置中被省略
-
-`GET /endpoints/{id}/config` 仅返回**已明确写入设备**的键。从配置文件继承的值会被静默省略。这是 Pulse 的正常行为。本工具会同时获取配置文件并合并，反映至 `effective.*`。
-
-### 3. 配置文件锁定设置的本地覆盖
-
-应用配置文件时，Pulse UI 将设置标记为"locked by profile"，但仍可直接从设备本机 UI 覆盖。覆盖后 Pulse UI 会显示警告（"A locked profile setting has been changed on this device"）。覆盖值会反映于 `/endpoints/{id}/config`，因此 `effective.*` 会显示正确的值。但 **API 无法判断哪些键处于覆盖状态**。`_source.*` 列可显示值来自设备还是配置文件，但覆盖状态的检测仍需通过 Pulse UI 确认。
-
-
-**Channel apps（16 个）** — 所有应用程序的启用/禁用切换均不返回：
-
-```
-channelAppsAppspace      channelAppsKahoot       channelAppsSmartenspaces
-channelAppsAround        channelAppsMiro         channelAppsSpotify
-channelAppsBrowser       channelAppsRobin        channelAppsTeams
-channelAppsHubspot       channelAppsSlack        channelAppsTrello
-channelAppsJira          channelAppsZoom         channelAppsWhatsapp
-                                                  channelAppsWorkplace
-```
-
-**其他只写键：**
-
-```
-homeApp                       avosChannel
-kioskMode                     scheduledFirmwareUpdateDelay
-ngmsEnabled                   settingsPassword
-ngmsFeatureToggle             settingsPasswordMode
-```
-
 
 
 ### 覆盖率摘要
