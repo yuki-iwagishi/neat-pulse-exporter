@@ -16,7 +16,6 @@
   - `config.*` — 裝置本身寫入的值
   - `profile.*` — 指派設定檔中宣告的值
   - `effective.*` — 裝置優先、設定檔補足的合併值
-- 解碼 base64 編碼的 MAC / IPv4 / IPv6 / 閘道欄位，並以 GB 為單位顯示儲存空間。
 - 透過 Server-Sent Events 即時將進度串流至瀏覽器。
 - 自動遮蔽鍵名含有 `password`、`token`、`secret`、`apiKey`、`privateKey`、`credential` 的敏感值（`settingsPasswordRequired` 等布林旗標除外）。
 - CSV 前置 UTF-8 BOM，使 Excel 預設以 UTF-8 開啟。
@@ -76,44 +75,6 @@ CSV 每台裝置一行。欄位為所有裝置鍵的聯集並依字母排序，�
 ### 對應 Excel 試算表的欄位
 
 預設情況下，API 回傳的所有鍵均會成為欄位。若需配合 Excel 的固定欄位結構，最簡單的方式是在 Excel 中使用 `VLOOKUP` / Power Query，或修改 `/api/export` 中的 `buildRow()` 函式，僅輸出所需的鍵。
-
-## Pulse API 的已知限制
-
-以下為針對實際 Pulse API 調查確認的事項（2026 年 5 月）。
-
-### 1. 型號特定的鍵
-
-部分設定僅在裝置型號支援時才會出現於 `/endpoints/{id}/config`。例如，`hdmiSleepSignal` 在 Neat Bar Pro 中有效，但在舊款 Neat Bar 中不包含。不支援的型號 `config.hdmiSleepSignal` 欄位會是空白，但 `effective.*` 仍會以設定檔值補足（並不代表裝置實際套用了該值）。
-
-### 2. 設定檔繼承值在裝置設定中被省略
-
-`GET /endpoints/{id}/config` 僅回傳**已明確寫入裝置**的鍵。從設定檔繼承的值會被靜默省略。這是 Pulse 的正常行為。本工具會一併取得設定檔並合併，反映至 `effective.*`。
-
-### 3. 設定檔鎖定設定的本地覆寫
-
-套用設定檔時，Pulse UI 將設定標記為「locked by profile」，但仍可直接從裝置本機 UI 覆寫。覆寫後 Pulse UI 會顯示警告（「A locked profile setting has been changed on this device」）。覆寫值會反映於 `/endpoints/{id}/config`，因此 `effective.*` 會顯示正確的值。但 **API 無法判斷哪些鍵處於覆寫狀態**。`_source.*` 欄位可顯示值來自裝置或設定檔，但覆寫狀態的偵測仍需透過 Pulse UI 確認。
-
-
-**Channel apps（16 個）** — 所有應用程式的啟用/停用切換均不回傳：
-
-```
-channelAppsAppspace      channelAppsKahoot       channelAppsSmartenspaces
-channelAppsAround        channelAppsMiro         channelAppsSpotify
-channelAppsBrowser       channelAppsRobin        channelAppsTeams
-channelAppsHubspot       channelAppsSlack        channelAppsTrello
-channelAppsJira          channelAppsZoom         channelAppsWhatsapp
-                                                  channelAppsWorkplace
-```
-
-**其他唯寫鍵：**
-
-```
-homeApp                       avosChannel
-kioskMode                     scheduledFirmwareUpdateDelay
-ngmsEnabled                   settingsPassword
-ngmsFeatureToggle             settingsPasswordMode
-```
-
 
 ### 涵蓋率摘要
 
