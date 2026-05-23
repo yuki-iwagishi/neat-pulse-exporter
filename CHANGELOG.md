@@ -83,12 +83,6 @@ Initial public release.
   production tenant with 560 endpoints / 296 rooms / 25 profiles /
   11 device models.
 
-### Known limitations
-See [README → Known Pulse API limitations](./README.md#known-pulse-api-limitations).
-Briefly: 24+ configuration keys observable in the audit log
-(`office_hours`, `channelApps*`, `homeApp`, `kioskMode`, etc.) are not
-returned by any documented Read API and therefore cannot be exported.
-Reported to Neat.
 
 [Unreleased]: https://github.com/yuki-iwagishi/neat-pulse-exporter/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/yuki-iwagishi/neat-pulse-exporter/releases/tag/v0.1.0
