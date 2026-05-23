@@ -26,8 +26,6 @@ cross-checking against an Excel inventory of meeting-room devices.
   - `config.*` — values returned by the device itself
   - `profile.*` — values declared in the assigned profile
   - `effective.*` — device value if present, else the profile value
-- Decodes base64-encoded MAC / IPv4 / IPv6 / gateway fields and exposes
-  storage figures in GB so the result opens cleanly in Excel.
 - Live progress streamed to the browser via Server-Sent Events.
 - Automatically masks values whose key suggests a secret (`password`,
   `token`, `secret`, `apiKey`, `privateKey`, `credential`, …) but leaves
@@ -144,63 +142,6 @@ with long-lived connections (e.g. a corporate proxy that buffers), switch to a
 plain `POST /api/export` returning the CSV body — the bulk of the logic in
 `server.js` is unchanged.
 
-## Known Pulse API limitations
-
-Investigated and confirmed against the live Pulse API (May 2026). These
-shape what `effective.*` can and cannot tell you:
-
-### 1. Model-specific keys
-
-A setting only appears in `/endpoints/{id}/config` if the device's model
-supports it. For example, **HDMI sleep signal** is supported on Neat Bar
-Pro but not on the original Neat Bar, so `config.hdmiSleepSignal` will be
-empty for Bar rows even though the key exists in the assigned profile.
-The corresponding `effective.*` column will fall back to the profile
-value, which does not mean the device actually applies it. Cross-check
-against the model's published feature list if in doubt.
-
-### 2. Profile-inherited values are omitted from device config
-
-`GET /endpoints/{id}/config` only returns keys that have been
-**explicitly written on the device itself**. Keys whose effective value
-comes from an assigned profile (via inheritance) are silently omitted.
-This is normal Pulse behaviour, not a bug. The exporter compensates by
-also fetching `/profiles/{profileId}` and merging the two into
-`effective.*`.
-
-### 3. Local overrides on profile-locked settings
-
-The Pulse UI marks a setting as *locked by profile* when a profile is
-assigned, but users can still override the setting directly on the Neat
-device. When that happens, Pulse shows the warning *"A locked profile
-setting has been changed on this device: Restore profile setting"* in
-its UI. The override **is** reflected in `/endpoints/{id}/config`, so
-`effective.*` correctly shows the device's actual value. However, the
-API does **not** expose the warning flag itself, so the CSV cannot tell
-you which keys are in this overridden state without also checking the
-Pulse UI.
-
-
-**Channel apps (16 keys)** — none of these per-app enable/disable
-toggles are exposed:
-
-```
-channelAppsAppspace      channelAppsKahoot       channelAppsSmartenspaces
-channelAppsAround        channelAppsMiro         channelAppsSpotify
-channelAppsBrowser       channelAppsRobin        channelAppsTeams
-channelAppsHubspot       channelAppsSlack        channelAppsTrello
-channelAppsJira          channelAppsZoom         channelAppsWhatsapp
-                                                  channelAppsWorkplace
-```
-
-**Other UI-settable keys with no Read API exposure:**
-
-```
-homeApp                       avosChannel
-kioskMode                     scheduledFirmwareUpdateDelay
-ngmsEnabled                   settingsPassword
-ngmsFeatureToggle             settingsPasswordMode
-```
 
 
 ### Coverage summary
@@ -270,14 +211,6 @@ neat-pulse-exporter/
 └── README.md
 ```
 
-## Further reading
-
-- [`docs/api_findings.md`](./docs/api_findings.md) — Detailed notes on
-  Pulse API behaviour collected while building this tool. Useful if you
-  are building any other Pulse-based integration.
-- [`examples/sample_output_columns.txt`](./examples/sample_output_columns.txt) —
-  Representative list of CSV columns produced against a 560-endpoint
-  tenant, grouped by prefix.
 
 ## Troubleshooting
 
