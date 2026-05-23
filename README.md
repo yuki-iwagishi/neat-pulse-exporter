@@ -44,8 +44,6 @@ can safely raise it.
 
 ## Screenshots
 
-> Add screenshots here after the first public release.
-> Suggested: (1) the Web UI with `.env` banner visible, (2) a snippet of the exported CSV in Excel.
 
 ## Tested on
 
@@ -68,7 +66,7 @@ can safely raise it.
 ### Option A — Node.js (recommended for development)
 
 ```bash
-git clone https://github.com/<your-account>/neat-pulse-exporter.git
+git clone https://github.com/yuki-iwagishi/neat-pulse-exporter.git
 cd neat-pulse-exporter
 npm install
 cp .env.example .env   # optional, see below
