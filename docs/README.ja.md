@@ -16,7 +16,6 @@
   - `config.*` — デバイス本体に書き込まれた値
   - `profile.*` — 割り当てプロファイルで宣言された値
   - `effective.*` — デバイス優先・プロファイル補完のマージ値
-- base64 エンコードされた MAC / IPv4 / IPv6 / ゲートウェイフィールドをデコードし、ストレージ容量を GB 単位で表示します。
 - Server-Sent Events を使ってブラウザにリアルタイムで進捗を表示します。
 - パスワード・トークン・シークレット等のキーに対応する値を自動的にマスクします（`settingsPasswordRequired` のようなフラグは除く）。
 - Excel で UTF-8 を正しく開けるよう、CSV に UTF-8 BOM を付与します。
@@ -77,43 +76,6 @@ CSV はデバイス 1 台につき 1 行です。列はすべてのデバイス�
 
 デフォルトでは API が返すすべてのキーが列になります。Excel の固定列に合わせる場合は、Excel 側で `VLOOKUP` / Power Query を使うか、`/api/export` 内の `buildRow()` 関数を編集して必要なキーだけを出力するよう変更してください。
 
-## Pulse API の既知の制限
-
-実環境の Pulse API に対して調査・確認した事項です（2026 年 5 月）。
-
-### 1. モデル依存のキー
-
-一部の設定はデバイスのモデルが対応している場合のみ `/endpoints/{id}/config` に含まれます。例えば `hdmiSleepSignal` は Neat Bar Pro では対応していますが、旧 Neat Bar では含まれません。対応していないモデルでは `config.hdmiSleepSignal` が空欄になりますが、`effective.*` はプロファイルの値で補完します（ただし実際にデバイスに適用されているとは限りません）。
-
-### 2. プロファイル継承値はデバイス設定から省略される
-
-`GET /endpoints/{id}/config` はデバイスに**明示的に書き込まれたキーのみ**を返します。プロファイルからの継承値は省略されます。これは Pulse の正常な仕様です。ツールはプロファイルも取得してマージし `effective.*` に反映します。
-
-### 3. プロファイルロック設定へのローカル上書き
-
-プロファイル適用時、Pulse UI は設定を「locked by profile」として表示しますが、デバイス本体の UI から上書きは可能です。上書きされると Pulse UI に警告（「A locked profile setting has been changed on this device」）が表示されます。上書き値は `/endpoints/{id}/config` に反映されるため `effective.*` は正しい値を示しますが、**どのキーが上書き状態かは API から判定できません**。`_source.*` 列でデバイス由来かプロファイル由来かを確認できますが、上書き状態の検出には Pulse UI での目視確認が必要です。
-
-
-**Channel apps（16 個）** — アプリ別の有効化トグルは一切返されません：
-
-```
-channelAppsAppspace      channelAppsKahoot       channelAppsSmartenspaces
-channelAppsAround        channelAppsMiro         channelAppsSpotify
-channelAppsBrowser       channelAppsRobin        channelAppsTeams
-channelAppsHubspot       channelAppsSlack        channelAppsTrello
-channelAppsJira          channelAppsZoom         channelAppsWhatsapp
-                                                  channelAppsWorkplace
-```
-
-**その他の書き込み専用キー：**
-
-```
-homeApp                       avosChannel
-kioskMode                     scheduledFirmwareUpdateDelay
-ngmsEnabled                   settingsPassword
-ngmsFeatureToggle             settingsPasswordMode
-```
-
 
 ### カバレッジの概要
 
@@ -161,10 +123,7 @@ neat-pulse-exporter/
 └── README.md             # English
 ```
 
-## 参考リソース
 
-- [`docs/api_findings.md`](./api_findings.md) — ツール作成中に調査した Pulse API の詳細な挙動ノート
-- [`examples/sample_output_columns.txt`](../examples/sample_output_columns.txt) — 560 エンドポイント規模のテナントで出力された CSV 列一覧
 
 ## トラブルシューティング
 
