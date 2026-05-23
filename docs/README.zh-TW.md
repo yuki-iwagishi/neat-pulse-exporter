@@ -102,24 +102,26 @@ CSV 每台裝置一行。欄位為所有裝置鍵的聯集並依字母排序，�
 
 ```
 neat-pulse-exporter/
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # Syntax check + smoke test (Node 18/20/22)
 ├── docs/
-│   ├── api_findings.md        # Pulse API 調查記錄
 │   ├── README.ja.md           # 日本語
 │   ├── README.ko.md           # 한국어
-│   ├── README.zh-TW.md        # 此檔案
+│   ├── README.zh-TW.md        # 繁體中文
 │   └── README.zh-CN.md        # 简体中文
-├── examples/
-│   └── sample_output_columns.txt   # CSV 欄位範例清單
 ├── public/
-│   └── index.html        # Web UI（無需建置步驟）
+│   └── index.html        # Single-file UI (no build step)
 ├── src/
-│   └── server.js         # Express 伺服器 + Pulse API 用戶端
+│   └── server.js         # Express server + Pulse API client
+├── .dockerignore
 ├── .env.example
 ├── .gitignore
 ├── CHANGELOG.md
+├── Dockerfile
 ├── LICENSE
 ├── package.json
-└── README.md             # English
+└── README.md
 ```
 
 ## 疑難排解
