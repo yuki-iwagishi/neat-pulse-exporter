@@ -180,24 +180,6 @@ API does **not** expose the warning flag itself, so the CSV cannot tell
 you which keys are in this overridden state without also checking the
 Pulse UI.
 
-### 4. `office_hours` (Sleep schedule) is write-only
-
-The Sleep schedule UI toggle and time range (recorded internally as
-`office_hours` and `office_hours_enabled`) are settable via the Pulse
-UI and are written to the audit log, but they do **not** appear in any
-documented Read API endpoint we tested
-(`/endpoints/{id}/config`, `/profiles/{id}`, `/rooms/{id}`,
-`/endpoints/{id}`). They therefore cannot be exported and Excel
-cross-checking has to be done manually for this field. Reported to
-Neat.
-
-### 5. Additional write-only configuration keys
-
-Same investigation, run against a 560-endpoint / 25-profile / 11-model
-production tenant, revealed **24 more keys** that behave exactly like
-`office_hours` — settable via the Pulse UI and recorded in the audit
-log, but absent from every read endpoint we tested. They cannot be
-included in the CSV:
 
 **Channel apps (16 keys)** — none of these per-app enable/disable
 toggles are exposed:
