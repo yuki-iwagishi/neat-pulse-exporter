@@ -93,13 +93,7 @@ CSV는 디바이스 1대당 1행입니다. 열은 모든 디바이스의 키를 
 
 프로파일 적용 시 Pulse UI는 설정을 "locked by profile"로 표시하지만, 디바이스 본체의 UI에서 재정의가 가능합니다. 재정의 시 Pulse UI에 경고("A locked profile setting has been changed on this device")가 표시됩니다. 재정의된 값은 `/endpoints/{id}/config`에 반영되므로 `effective.*`는 올바른 값을 나타냅니다. 단, **어떤 키가 재정의 상태인지는 API에서 판별할 수 없습니다**. `_source.*` 열로 디바이스 기원인지 프로파일 기원인지 확인할 수 있지만, 재정의 상태 감지는 Pulse UI에서 직접 확인이 필요합니다.
 
-### 4. `office_hours`(수면 일정)는 쓰기 전용
 
-수면 일정 토글과 시간 범위(내부 키 이름 `office_hours`, `office_hours_enabled`)는 UI에서 설정 가능하고 감사 로그에도 기록되지만, 어떤 Read API 엔드포인트에서도 반환되지 않습니다. CSV로 내보낼 수 없으므로 Excel 대조는 수동으로 진행해야 합니다. Neat에 보고된 상태입니다.
-
-### 5. 기타 쓰기 전용 키
-
-560개 엔드포인트 규모 테넌트를 대상으로 한 조사에서, **24개 키**가 `office_hours`와 동일하게 쓰기 전용(Read API 미포함)임을 확인했습니다:
 
 **Channel apps(16개)** — 앱별 활성화 토글은 일절 반환되지 않습니다:
 
@@ -121,7 +115,6 @@ ngmsEnabled                   settingsPassword
 ngmsFeatureToggle             settingsPasswordMode
 ```
 
-`settingsPassword`와 원격 접속 비밀번호는 보안상의 이유로 생략되며, 나머지는 Read API 미구현으로 판단됩니다. `office_hours` 건과 함께 Neat에 보고되었습니다.
 
 ### 커버리지 요약
 
