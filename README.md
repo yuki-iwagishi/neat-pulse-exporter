@@ -202,9 +202,6 @@ ngmsEnabled                   settingsPassword
 ngmsFeatureToggle             settingsPasswordMode
 ```
 
-`settingsPassword` and the related Remote-access password are omitted
-for legitimate security reasons; the others appear to be a Read API
-gap. Reported together with `office_hours`.
 
 ### Coverage summary
 
