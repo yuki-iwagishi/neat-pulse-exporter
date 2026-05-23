@@ -1,0 +1,28 @@
+{
+  "name": "neat-pulse-exporter",
+  "version": "0.2.0",
+  "description": "Web UI tool that exports per-device settings from the Neat Pulse API as CSV.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "neat",
+    "neat-pulse",
+    "csv",
+    "export"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "csv-stringify": "^6.5.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "p-limit": "^5.0.0"
+  }
+}

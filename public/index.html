@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neat Pulse Settings Exporter</title>
+  <style>
+    :root {
+      --bg: #0e1117;
+      --panel: #161b22;
+      --panel-border: #30363d;
+      --text: #c9d1d9;
+      --text-dim: #8b949e;
+      --accent: #58a6ff;
+      --accent-hover: #79b8ff;
+      --ok: #3fb950;
+      --warn: #d29922;
+      --err: #f85149;
+      --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 2rem 1rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans",
+                   "Yu Gothic UI", sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.5;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    header { margin-bottom: 1.5rem; }
+    h1 { margin: 0 0 0.25rem; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; }
+    .subtitle { color: var(--text-dim); font-size: 0.9rem; }
+    .panel {
+      background: var(--panel); border: 1px solid var(--panel-border);
+      border-radius: 6px; padding: 1.25rem; margin-bottom: 1rem;
+    }
+    .field { margin-bottom: 1rem; }
+    .field:last-child { margin-bottom: 0; }
+    label { display: block; margin-bottom: 0.35rem; font-size: 0.85rem; font-weight: 500; color: var(--text-dim); }
+    .hint { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.3rem; }
+    input[type="text"], input[type="password"] {
+      width: 100%; padding: 0.5rem 0.7rem;
+      background: #0d1117; border: 1px solid var(--panel-border);
+      border-radius: 4px; color: var(--text);
+      font-family: var(--mono); font-size: 0.85rem;
+    }
+    input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88,166,255,0.15); }
+    input.locked { opacity: 0.45; cursor: not-allowed; background: #0d1117; border-color: #238636; }
+    button {
+      background: var(--accent); color: #0d1117; border: none;
+      padding: 0.55rem 1.1rem; border-radius: 4px; font-size: 0.9rem;
+      font-weight: 600; cursor: pointer; transition: background 0.15s;
+    }
+    button:hover:not(:disabled) { background: var(--accent-hover); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .progress {
+      margin-top: 1rem; padding: 0.9rem 1rem;
+      background: #0d1117; border: 1px solid var(--panel-border);
+      border-radius: 4px; font-family: var(--mono); font-size: 0.8rem;
+      min-height: 5rem; max-height: 14rem; overflow-y: auto;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .progress.hidden { display: none; }
+    .log-line { margin: 0.15rem 0; color: var(--text-dim); }
+    .log-line.ok   { color: var(--ok); }
+    .log-line.warn { color: var(--warn); }
+    .log-line.err  { color: var(--err); }
+    .progress-bar { height: 4px; background: #21262d; border-radius: 2px; overflow: hidden; margin-top: 0.8rem; }
+    .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s; }
+    footer { margin-top: 1.5rem; font-size: 0.75rem; color: var(--text-dim); text-align: center; }
+    .row { display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; }
+    .badge {
+      display: inline-block; font-size: 0.7rem; padding: 0.1rem 0.4rem;
+      border-radius: 3px; background: #21262d; color: var(--text-dim); font-family: var(--mono);
+    }
+    /* .env loaded banner */
+    .env-banner {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      background: #0f2a1a; border: 1px solid #238636; border-radius: 4px;
+      padding: 0.65rem 0.9rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--ok);
+    }
+    .env-banner .icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.05rem; }
+    .env-banner .env-detail { color: var(--text-dim); font-size: 0.78rem; margin-top: 0.15rem; }
+    /* Warning banner */
+    .warn-banner {
+      display: none; align-items: flex-start; gap: 0.6rem;
+      background: #2d1f00; border: 1px solid var(--warn); border-radius: 4px;
+      padding: 0.65rem 0.9rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--warn);
+    }
+    .warn-banner.visible { display: flex; }
+    label .lock-icon { margin-left: 0.4rem; font-size: 0.75rem; color: var(--ok); }
+    /* Lang selector */
+    .lang-bar {
+      display: flex; justify-content: flex-end; gap: 0.5rem;
+      margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .lang-btn {
+      background: transparent; color: var(--text-dim); border: 1px solid var(--panel-border);
+      padding: 0.2rem 0.55rem; border-radius: 3px; font-size: 0.78rem; cursor: pointer;
+    }
+    .lang-btn.active, .lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="lang-bar" id="langBar"></div>
+
+    <header>
+      <h1 id="t-title">Neat Pulse Settings Exporter</h1>
+      <p class="subtitle" id="t-subtitle">
+        Export per-device settings from the Neat Pulse API as a CSV file
+        suitable for cross-checking with an existing Excel inventory.
+      </p>
+    </header>
+
+    <div class="panel">
+      <div id="warnBanner" class="warn-banner">
+        <span class="icon">⚠️</span>
+        <div id="t-warnText"></div>
+      </div>
+      <div id="envBanner" style="display:none"></div>
+
+      <div class="field">
+        <label for="apiKey">
+          <span id="t-apiKeyLabel">API Key</span>
+          <span class="badge">Bearer token</span>
+          <span id="apiKeyLock" class="lock-icon" style="display:none">🔒 <span id="t-loadedFromEnv">loaded from .env</span></span>
+        </label>
+        <input type="password" id="apiKey" autocomplete="off" spellcheck="false" />
+        <div class="hint" id="t-apiKeyHint">
+          Requires Neat Pulse Plus or Pro plan. The key is sent only to this local server and is never persisted.
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="orgId">
+          <span id="t-orgIdLabel">Organization ID</span>
+          <span id="orgIdLock" class="lock-icon" style="display:none">🔒 <span class="t-loadedFromEnv">loaded from .env</span></span>
+        </label>
+        <input type="text" id="orgId" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <div class="row">
+        <button id="exportBtn">Export to CSV</button>
+      </div>
+
+      <div id="progress" class="progress hidden" aria-live="polite"></div>
+      <div id="progressBar" class="progress-bar hidden">
+        <div id="progressFill" class="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <footer id="t-footer">
+      Sensitive fields (passwords, tokens, secrets) are automatically masked.
+      Exported files may still contain network details — handle accordingly.
+    </footer>
+  </div>
+
+  <script>
+  // -------- Translations --------
+  const LANGS = {
+    en: {
+      code: 'en', label: 'English',
+      title: 'Neat Pulse Settings Exporter',
+      subtitle: 'Export per-device settings from the Neat Pulse API as a CSV file suitable for cross-checking with an existing Excel inventory.',
+      apiKeyLabel: 'API Key',
+      apiKeyHint: 'Requires Neat Pulse Plus or Pro plan. The key is sent only to this local server and is never persisted.',
+      orgIdLabel: 'Organization ID',
+      exportBtn: 'Export to CSV',
+      loadedFromEnv: 'loaded from .env',
+      envLoaded: '.env credentials loaded',
+      envSubtitle: 'You can export without entering values below.',
+      apiKeySet: '●●●●●●●● (set)',
+      notSet: '(not set)',
+      apiKeyPlaceholder: '●●●●●●●● (loaded from .env — leave blank to use it)',
+      orgIdPlaceholder: (preview) => `${preview}… (loaded from .env — leave blank to use it)`,
+      warnLan: 'Warning: Server is bound to a LAN address. Anyone on the same network can trigger exports. Set HOST=127.0.0.1 in .env for local-only access.',
+      footer: 'Sensitive fields (passwords, tokens, secrets) are automatically masked. Exported files may still contain network details — handle accordingly.',
+      progressComplete: (n, errs) => `Export complete: ${n} devices` + (errs > 0 ? `, ${errs} with errors` : ''),
+      progressOf: (c, t) => `Progress: ${c} / ${t}`,
+      errConn: 'Connection error',
+    },
+    ja: {
+      code: 'ja', label: '日本語',
+      title: 'Neat Pulse 設定エクスポーター',
+      subtitle: 'Neat Pulse API からデバイスごとの設定を CSV ファイルとしてエクスポートし、Excel での棚卸し・照合に活用できます。',
+      apiKeyLabel: 'API キー',
+      apiKeyHint: 'Neat Pulse Plus または Pro プランが必要です。キーはローカルサーバーのみに送信され、永続保存されません。',
+      orgIdLabel: 'Organization ID',
+      exportBtn: 'CSV にエクスポート',
+      loadedFromEnv: '.env から読み込み済み',
+      envLoaded: '.env の認証情報を読み込みました',
+      envSubtitle: 'フォームを空欄のままエクスポートできます。',
+      apiKeySet: '●●●●●●●● (設定済み)',
+      notSet: '(未設定)',
+      apiKeyPlaceholder: '●●●●●●●● (.env から読み込み済み — 空欄のままでOK)',
+      orgIdPlaceholder: (preview) => `${preview}… (.env から読み込み済み — 空欄のままでOK)`,
+      warnLan: '⚠️ 警告: サーバーが LAN アドレスにバインドされています。同一ネットワーク上の誰でもエクスポートを実行できます。ローカル専用にするには .env に HOST=127.0.0.1 を設定してください。',
+      footer: 'パスワード・トークン・シークレット等の機密フィールドは自動的にマスクされます。エクスポートされたファイルにはネットワーク情報が含まれる場合があります。取り扱いにご注意ください。',
+      progressComplete: (n, errs) => `エクスポート完了: ${n} デバイス` + (errs > 0 ? `、${errs} 件エラー` : ''),
+      progressOf: (c, t) => `進捗: ${c} / ${t}`,
+      errConn: '接続エラー',
+    },
+    ko: {
+      code: 'ko', label: '한국어',
+      title: 'Neat Pulse 설정 내보내기',
+      subtitle: 'Neat Pulse API에서 디바이스별 설정을 CSV 파일로 내보내 기존 Excel 인벤토리와 대조할 수 있습니다.',
+      apiKeyLabel: 'API 키',
+      apiKeyHint: 'Neat Pulse Plus 또는 Pro 플랜이 필요합니다. 키는 로컬 서버에만 전송되며 저장되지 않습니다.',
+      orgIdLabel: '조직 ID',
+      exportBtn: 'CSV로 내보내기',
+      loadedFromEnv: '.env에서 로드됨',
+      envLoaded: '.env 인증 정보 로드됨',
+      envSubtitle: '아래 필드를 비워 두고 내보낼 수 있습니다.',
+      apiKeySet: '●●●●●●●● (설정됨)',
+      notSet: '(미설정)',
+      apiKeyPlaceholder: '●●●●●●●● (.env에서 로드됨 — 비워 두면 사용됩니다)',
+      orgIdPlaceholder: (preview) => `${preview}… (.env에서 로드됨 — 비워 두면 사용됩니다)`,
+      warnLan: '⚠️ 경고: 서버가 LAN 주소에 바인딩되어 있습니다. 같은 네트워크의 누구나 내보내기를 실행할 수 있습니다. 로컬 전용으로 사용하려면 .env에 HOST=127.0.0.1을 설정하세요.',
+      footer: '비밀번호, 토큰, 시크릿 등 민감한 필드는 자동으로 마스킹됩니다. 내보낸 파일에는 네트워크 정보가 포함될 수 있으니 취급에 주의하세요.',
+      progressComplete: (n, errs) => `내보내기 완료: ${n}개 디바이스` + (errs > 0 ? `, ${errs}개 오류` : ''),
+      progressOf: (c, t) => `진행: ${c} / ${t}`,
+      errConn: '연결 오류',
+    },
+    'zh-TW': {
+      code: 'zh-TW', label: '繁體中文',
+      title: 'Neat Pulse 設定匯出工具',
+      subtitle: '從 Neat Pulse API 匯出每台裝置的設定為 CSV 檔案，方便與現有 Excel 庫存交叉比對。',
+      apiKeyLabel: 'API 金鑰',
+      apiKeyHint: '需要 Neat Pulse Plus 或 Pro 方案。金鑰僅傳送至本機伺服器，不會被儲存。',
+      orgIdLabel: '組織 ID',
+      exportBtn: '匯出為 CSV',
+      loadedFromEnv: '已從 .env 載入',
+      envLoaded: '已從 .env 載入憑證',
+      envSubtitle: '可直接點選匯出，無需填寫以下欄位。',
+      apiKeySet: '●●●●●●●● (已設定)',
+      notSet: '(未設定)',
+      apiKeyPlaceholder: '●●●●●●●● (已從 .env 載入 — 留空即可使用)',
+      orgIdPlaceholder: (preview) => `${preview}… (已從 .env 載入 — 留空即可使用)`,
+      warnLan: '⚠️ 警告：伺服器已綁定至區域網路位址。同一網路中的任何人均可執行匯出。若僅供本機使用，請在 .env 中設定 HOST=127.0.0.1。',
+      footer: '密碼、權杖、金鑰等敏感欄位已自動遮罩。匯出的檔案可能包含網路詳細資訊，請妥善保管。',
+      progressComplete: (n, errs) => `匯出完成：${n} 台裝置` + (errs > 0 ? `，${errs} 個錯誤` : ''),
+      progressOf: (c, t) => `進度：${c} / ${t}`,
+      errConn: '連線錯誤',
+    },
+    'zh-CN': {
+      code: 'zh-CN', label: '简体中文',
+      title: 'Neat Pulse 设置导出工具',
+      subtitle: '从 Neat Pulse API 将每台设备的配置导出为 CSV 文件，便于与现有 Excel 清单进行核对。',
+      apiKeyLabel: 'API 密钥',
+      apiKeyHint: '需要 Neat Pulse Plus 或 Pro 套餐。密钥仅发送至本地服务器，不会被保存。',
+      orgIdLabel: '组织 ID',
+      exportBtn: '导出为 CSV',
+      loadedFromEnv: '已从 .env 加载',
+      envLoaded: '已从 .env 加载凭证',
+      envSubtitle: '可直接点击导出，无需填写以下字段。',
+      apiKeySet: '●●●●●●●● (已设置)',
+      notSet: '(未设置)',
+      apiKeyPlaceholder: '●●●●●●●● (已从 .env 加载 — 留空即可使用)',
+      orgIdPlaceholder: (preview) => `${preview}… (已从 .env 加载 — 留空即可使用)`,
+      warnLan: '⚠️ 警告：服务器已绑定到局域网地址。同一网络中的任何人均可触发导出。如需仅限本地访问，请在 .env 中设置 HOST=127.0.0.1。',
+      footer: '密码、令牌、密钥等敏感字段已自动屏蔽。导出的文件可能包含网络详细信息，请妥善保管。',
+      progressComplete: (n, errs) => `导出完成：${n} 台设备` + (errs > 0 ? `，${errs} 个错误` : ''),
+      progressOf: (c, t) => `进度：${c} / ${t}`,
+      errConn: '连接错误',
+    },
+  };
+
+  // -------- State --------
+  const $ = (id) => document.getElementById(id);
+  const apiKeyEl     = $('apiKey');
+  const orgIdEl      = $('orgId');
+  const btn          = $('exportBtn');
+  const progress     = $('progress');
+  const progressBar  = $('progressBar');
+  const progressFill = $('progressFill');
+  const envBanner    = $('envBanner');
+  const warnBanner   = $('warnBanner');
+
+  let lang = LANGS[localStorage.getItem('pulseLang')] || LANGS.en;
+  let healthData = null;
+
+  // -------- i18n --------
+  function applyLang(l) {
+    lang = l;
+    localStorage.setItem('pulseLang', l.code);
+    document.documentElement.lang = l.code;
+    $('t-title').textContent    = l.title;
+    $('t-subtitle').textContent = l.subtitle;
+    $('t-apiKeyLabel').textContent = l.apiKeyLabel;
+    $('t-apiKeyHint').textContent  = l.apiKeyHint;
+    $('t-orgIdLabel').textContent  = l.orgIdLabel;
+    btn.textContent = l.exportBtn;
+    $('t-footer').textContent = l.footer;
+    $('t-loadedFromEnv').textContent = l.loadedFromEnv;
+    document.querySelectorAll('.t-loadedFromEnv').forEach(el => el.textContent = l.loadedFromEnv);
+    // Update placeholders
+    apiKeyEl.placeholder = healthData?.hasEnvApiKey
+      ? l.apiKeyPlaceholder
+      : l.apiKeyLabel;
+    if (healthData?.hasEnvOrgId) {
+      orgIdEl.placeholder = l.orgIdPlaceholder(healthData.orgIdPreview);
+    }
+    // Refresh env banner if shown
+    if (healthData?.hasEnvCredentials) applyEnvLoaded(healthData);
+    // Warn banner
+    if (healthData?.lanMode) $('t-warnText').textContent = l.warnLan;
+    // Lang buttons
+    document.querySelectorAll('.lang-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.code === l.code);
+    });
+  }
+
+  function buildLangBar() {
+    const bar = $('langBar');
+    Object.values(LANGS).forEach(l => {
+      const b = document.createElement('button');
+      b.className = 'lang-btn';
+      b.dataset.code = l.code;
+      b.textContent = l.label;
+      b.onclick = () => applyLang(l);
+      bar.appendChild(b);
+    });
+  }
+
+  // -------- .env UI --------
+  function applyEnvLoaded(h) {
+    envBanner.className = 'env-banner';
+    envBanner.innerHTML = `
+      <span class="icon">✅</span>
+      <div>
+        <div><strong>${lang.envLoaded}</strong> — ${lang.envSubtitle}</div>
+        <div class="env-detail">
+          PULSE_API_KEY: ${h.hasEnvApiKey ? lang.apiKeySet : lang.notSet}
+          &nbsp;|&nbsp;
+          PULSE_ORG_ID: ${h.hasEnvOrgId ? h.orgIdPreview + '… (set)' : lang.notSet}
+          &nbsp;|&nbsp;
+          concurrency: ${h.concurrency}
+        </div>
+      </div>`;
+    envBanner.style.display = 'flex';
+    if (h.hasEnvApiKey) {
+      apiKeyEl.placeholder = lang.apiKeyPlaceholder;
+      apiKeyEl.classList.add('locked');
+      $('apiKeyLock').style.display = '';
+    }
+    if (h.hasEnvOrgId) {
+      orgIdEl.placeholder = lang.orgIdPlaceholder(h.orgIdPreview);
+      orgIdEl.classList.add('locked');
+      $('orgIdLock').style.display = '';
+    }
+  }
+
+  // Register input listeners ONCE here — not inside applyEnvLoaded which is
+  // called on every language switch and would accumulate duplicate listeners.
+  apiKeyEl.addEventListener('input', () => {
+    apiKeyEl.classList.toggle('locked', apiKeyEl.value === '' && Boolean(healthData?.hasEnvApiKey));
+  });
+  orgIdEl.addEventListener('input', () => {
+    orgIdEl.classList.toggle('locked', orgIdEl.value === '' && Boolean(healthData?.hasEnvOrgId));
+  });
+
+  // -------- Progress --------
+  function log(msg, cls = '') {
+    const line = document.createElement('div');
+    line.className = 'log-line' + (cls ? ' ' + cls : '');
+    line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    progress.appendChild(line);
+    progress.scrollTop = progress.scrollHeight;
+  }
+  function setProgress(completed, total) {
+    progressFill.style.width = (total > 0 ? Math.round((completed / total) * 100) : 0) + '%';
+  }
+  function reset() {
+    progress.innerHTML = '';
+    progress.classList.remove('hidden');
+    progressBar.classList.remove('hidden');
+    progressFill.style.width = '0%';
+  }
+  function downloadCsv(filename, csv) {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // -------- SSE over POST + job/download separation --------
+  // 1. POST /api/export          → { jobId }
+  // 2. GET  /api/progress/:jobId → SSE (status / progress / done / error)
+  //    'done' carries metadata only — NO csv payload
+  // 3. GET  /api/download/:jobId → CSV file download
+  async function runExport(apiKey, orgId) {
+    reset();
+    btn.disabled = true;
+
+    // Step 1: start the export job
+    let jobId;
+    try {
+      const res = await fetch('/api/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: apiKey || undefined, orgId: orgId || undefined }),
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        log('Error: ' + (j.error || res.statusText), 'err');
+        btn.disabled = false;
+        return;
+      }
+      jobId = j.jobId;
+    } catch (e) {
+      log(lang.errConn + ': ' + e.message, 'err');
+      btn.disabled = false;
+      return;
+    }
+
+    // Step 2: open SSE progress stream
+    let progressRes;
+    try {
+      progressRes = await fetch(`/api/progress/${jobId}`);
+    } catch (e) {
+      log(lang.errConn + ': ' + e.message, 'err');
+      btn.disabled = false;
+      return;
+    }
+
+    const reader  = progressRes.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+
+      const frames = buf.split('\n\n');
+      buf = frames.pop();
+
+      for (const frame of frames) {
+        const lines = frame.split('\n');
+        let event = 'message', data = '';
+        for (const line of lines) {
+          if (line.startsWith('event: ')) event = line.slice(7).trim();
+          if (line.startsWith('data: '))  data  = line.slice(6).trim();
+        }
+        if (!data) continue;
+        let d;
+        try { d = JSON.parse(data); } catch { continue; }
+
+        if (event === 'status') {
+          log(d.message);
+          if (d.phase === 'rooms' && d.total > 100) {
+            const estSec = Math.ceil((d.total / 3 * 0.6) + (d.total * 1.5 / 3 * 0.6));
+            const estMin = Math.max(1, Math.ceil(estSec / 60));
+            log(`⏱ Estimated time: ~${estMin}–${estMin * 2} min for ${d.total} rooms (~${Math.round(d.total * 1.5)} endpoints). Please wait.`, 'warn');
+          }
+        } else if (event === 'progress') {
+          if (d.phase === 'rooms') {
+            const pct = d.total > 0 ? Math.round((d.completed / d.total) * 50) : 0;
+            progressFill.style.width = pct + '%';
+            if (d.message) log(d.message);
+          } else {
+            const pct = d.total > 0 ? Math.round(50 + (d.completed / d.total) * 50) : 50;
+            progressFill.style.width = pct + '%';
+            if (d.completed === d.total || d.completed % 10 === 0) {
+              log(lang.progressOf(d.completed, d.total));
+            }
+          }
+        } else if (event === 'done') {
+          // Step 3: trigger CSV download via dedicated endpoint
+          setProgress(1, 1);
+          log(
+            lang.progressComplete(d.deviceCount, d.errorCount),
+            d.errorCount > 0 ? 'warn' : 'ok',
+          );
+          // Use anchor click to trigger browser download — no blob in memory
+          const a = document.createElement('a');
+          a.href = `/api/download/${jobId}`;
+          a.download = d.filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          btn.disabled = false;
+        } else if (event === 'error') {
+          log('Error: ' + d.message, 'err');
+          btn.disabled = false;
+        }
+      }
+    }
+    btn.disabled = false;
+  }
+
+  btn.addEventListener('click', () => {
+    runExport(apiKeyEl.value.trim(), orgIdEl.value.trim());
+  });
+
+  // -------- Init --------
+  buildLangBar();
+  fetch('/api/health').then(r => r.json()).then(h => {
+    healthData = h;
+    if (h.hasEnvCredentials) applyEnvLoaded(h);
+    if (h.lanMode) {
+      warnBanner.classList.add('visible');
+      $('t-warnText').textContent = lang.warnLan;
+    }
+    // Show version/node in footer for troubleshooting
+    const vInfo = document.createElement('div');
+    vInfo.style.cssText = 'margin-top:0.5rem;opacity:0.5;font-size:0.72rem;';
+    vInfo.textContent = `v${h.version} · Node ${h.node} · concurrency ${h.concurrency} · timeout ${h.fetchTimeoutMs / 1000}s`;
+    $('t-footer').appendChild(vInfo);
+    applyLang(lang);
+  }).catch(() => {});
+  applyLang(lang);  // initial render (without health data)
+  </script>
+</body>
+</html>

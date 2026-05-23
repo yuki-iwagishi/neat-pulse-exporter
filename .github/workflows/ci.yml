@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Syntax & dependency check
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check server.js syntax
+        run: node --check src/server.js
+
+      - name: Verify public/index.html is well-formed
+        run: |
+          node -e "
+          const fs = require('fs');
+          const html = fs.readFileSync('public/index.html', 'utf8');
+          const checks = ['<!DOCTYPE html>', '<html', '</html>', '<script', '</script>'];
+          for (const tag of checks) {
+            if (!html.includes(tag)) {
+              console.error('Missing:', tag);
+              process.exit(1);
+            }
+          }
+          console.log('HTML structure OK');
+          "
+
+      - name: Verify package.json is valid JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('package.json','utf8')); console.log('package.json OK')"
+
+      - name: Smoke-test server startup
+        run: |
+          # Start server in background and verify health endpoint
+          PORT=3999 PULSE_API_KEY=dummy PULSE_ORG_ID=dummy node src/server.js &
+          SERVER_PID=$!
+          sleep 3
+          RESULT=$(curl -sf http://127.0.0.1:3999/api/health || echo "FAIL")
+          kill $SERVER_PID 2>/dev/null
+          if echo "$RESULT" | grep -q '"ok":true'; then
+            echo "Server health check passed"
+          else
+            echo "Server health check FAILED: $RESULT"
+            exit 1
+          fi

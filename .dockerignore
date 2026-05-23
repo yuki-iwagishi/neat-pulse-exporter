@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.csv
+exports/
+.git/
+.github/
+docs/
+examples/
+*.md
+!README.md
