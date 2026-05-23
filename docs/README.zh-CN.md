@@ -93,13 +93,6 @@ CSV 每台设备一行。列为所有设备键的并集，按字母顺序排列�
 
 应用配置文件时，Pulse UI 将设置标记为"locked by profile"，但仍可直接从设备本机 UI 覆盖。覆盖后 Pulse UI 会显示警告（"A locked profile setting has been changed on this device"）。覆盖值会反映于 `/endpoints/{id}/config`，因此 `effective.*` 会显示正确的值。但 **API 无法判断哪些键处于覆盖状态**。`_source.*` 列可显示值来自设备还是配置文件，但覆盖状态的检测仍需通过 Pulse UI 确认。
 
-### 4. `office_hours`（休眠计划）为只写
-
-休眠计划的切换开关与时间范围（内部键名 `office_hours`、`office_hours_enabled`）可通过 UI 设置，也会记录于审计日志，但在任何 Read API 端点中均不会返回。因此无法导出至 CSV，Excel 比对需手动进行。已向 Neat 反馈。
-
-### 5. 其他只写配置键
-
-在 560 个端点规模的租户上进行的调查，发现另外 **24 个键**与 `office_hours` 相同，均为只写（Read API 不包含）：
 
 **Channel apps（16 个）** — 所有应用程序的启用/禁用切换均不返回：
 
@@ -121,7 +114,7 @@ ngmsEnabled                   settingsPassword
 ngmsFeatureToggle             settingsPasswordMode
 ```
 
-`settingsPassword` 与远程访问密码因安全原因被省略；其余则属于 Read API 的缺口，已连同 `office_hours` 向 Neat 反馈。
+
 
 ### 覆盖率摘要
 
