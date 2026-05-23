@@ -35,7 +35,7 @@
 ## セットアップ
 
 ```bash
-git clone https://github.com/<your-account>/neat-pulse-exporter.git
+git clone https://github.com/yuki-iwagishi/neat-pulse-exporter.git
 cd neat-pulse-exporter
 npm install
 cp .env.example .env   # 任意、下記参照
