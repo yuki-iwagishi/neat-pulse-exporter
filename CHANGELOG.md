@@ -90,5 +90,5 @@ Briefly: 24+ configuration keys observable in the audit log
 returned by any documented Read API and therefore cannot be exported.
 Reported to Neat.
 
-[Unreleased]: https://github.com/<your-account>/neat-pulse-exporter/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/<your-account>/neat-pulse-exporter/releases/tag/v0.1.0
+[Unreleased]: https://github.com/yuki-iwagishi/neat-pulse-exporter/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/yuki-iwagishi/neat-pulse-exporter/releases/tag/v0.1.0
