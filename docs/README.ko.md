@@ -16,7 +16,6 @@
   - `config.*` — 디바이스에 직접 기록된 값
   - `profile.*` — 할당된 프로파일에 선언된 값
   - `effective.*` — 디바이스 우선·프로파일 보완의 병합 값
-- base64로 인코딩된 MAC / IPv4 / IPv6 / 게이트웨이 필드를 디코딩하고 스토리지를 GB 단위로 표시합니다.
 - Server-Sent Events를 통해 브라우저에 진행 상황을 실시간으로 표시합니다.
 - 패스워드·토큰·시크릿 등 민감한 키의 값을 자동으로 마스킹합니다(`settingsPasswordRequired` 같은 플래그는 제외).
 - Excel에서 UTF-8을 올바르게 열 수 있도록 CSV에 UTF-8 BOM을 추가합니다.
@@ -76,44 +75,6 @@ CSV는 디바이스 1대당 1행입니다. 열은 모든 디바이스의 키를 
 ### Excel 시트 열에 맞추기
 
 기본적으로 API가 반환하는 모든 키가 열이 됩니다. Excel의 고정 열 구조에 맞추려면 Excel에서 `VLOOKUP` / Power Query를 사용하거나, `/api/export` 내의 `buildRow()` 함수를 수정하여 필요한 키만 출력하도록 변경하세요.
-
-## Pulse API의 알려진 제한 사항
-
-실제 Pulse API를 대상으로 조사·확인한 내용입니다(2026년 5월).
-
-### 1. 모델별 키
-
-일부 설정은 해당 디바이스 모델이 지원하는 경우에만 `/endpoints/{id}/config`에 포함됩니다. 예를 들어 `hdmiSleepSignal`은 Neat Bar Pro에서는 지원되지만 구형 Neat Bar에서는 포함되지 않습니다. 지원하지 않는 모델은 `config.hdmiSleepSignal`이 비어 있지만 `effective.*`는 프로파일 값으로 보완합니다(단, 실제 디바이스에 적용된다는 의미는 아닙니다).
-
-### 2. 프로파일 상속 값은 디바이스 설정에서 생략됨
-
-`GET /endpoints/{id}/config`는 디바이스에 **명시적으로 기록된 키만** 반환합니다. 프로파일에서 상속된 값은 자동으로 생략됩니다. 이는 Pulse의 정상적인 동작입니다. 이 도구는 프로파일도 함께 가져와서 병합하고 `effective.*`에 반영합니다.
-
-### 3. 프로파일 잠금 설정의 로컬 재정의
-
-프로파일 적용 시 Pulse UI는 설정을 "locked by profile"로 표시하지만, 디바이스 본체의 UI에서 재정의가 가능합니다. 재정의 시 Pulse UI에 경고("A locked profile setting has been changed on this device")가 표시됩니다. 재정의된 값은 `/endpoints/{id}/config`에 반영되므로 `effective.*`는 올바른 값을 나타냅니다. 단, **어떤 키가 재정의 상태인지는 API에서 판별할 수 없습니다**. `_source.*` 열로 디바이스 기원인지 프로파일 기원인지 확인할 수 있지만, 재정의 상태 감지는 Pulse UI에서 직접 확인이 필요합니다.
-
-
-
-**Channel apps(16개)** — 앱별 활성화 토글은 일절 반환되지 않습니다:
-
-```
-channelAppsAppspace      channelAppsKahoot       channelAppsSmartenspaces
-channelAppsAround        channelAppsMiro         channelAppsSpotify
-channelAppsBrowser       channelAppsRobin        channelAppsTeams
-channelAppsHubspot       channelAppsSlack        channelAppsTrello
-channelAppsJira          channelAppsZoom         channelAppsWhatsapp
-                                                  channelAppsWorkplace
-```
-
-**기타 쓰기 전용 키:**
-
-```
-homeApp                       avosChannel
-kioskMode                     scheduledFirmwareUpdateDelay
-ngmsEnabled                   settingsPassword
-ngmsFeatureToggle             settingsPasswordMode
-```
 
 
 ### 커버리지 요약
