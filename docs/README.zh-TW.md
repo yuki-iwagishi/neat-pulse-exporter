@@ -93,13 +93,6 @@ CSV 每台裝置一行。欄位為所有裝置鍵的聯集並依字母排序，�
 
 套用設定檔時，Pulse UI 將設定標記為「locked by profile」，但仍可直接從裝置本機 UI 覆寫。覆寫後 Pulse UI 會顯示警告（「A locked profile setting has been changed on this device」）。覆寫值會反映於 `/endpoints/{id}/config`，因此 `effective.*` 會顯示正確的值。但 **API 無法判斷哪些鍵處於覆寫狀態**。`_source.*` 欄位可顯示值來自裝置或設定檔，但覆寫狀態的偵測仍需透過 Pulse UI 確認。
 
-### 4. `office_hours`（休眠排程）為唯寫
-
-休眠排程的切換開關與時間範圍（內部鍵名 `office_hours`、`office_hours_enabled`）可透過 UI 設定，也會記錄於稽核日誌，但在任何 Read API 端點中均不會回傳。因此無法匯出至 CSV，Excel 比對需手動進行。已向 Neat 回報。
-
-### 5. 其他唯寫設定鍵
-
-在 560 個端點規模的租用戶上進行的調查，發現另外 **24 個鍵**與 `office_hours` 相同，均為唯寫（Read API 不包含）：
 
 **Channel apps（16 個）** — 所有應用程式的啟用/停用切換均不回傳：
 
@@ -121,7 +114,6 @@ ngmsEnabled                   settingsPassword
 ngmsFeatureToggle             settingsPasswordMode
 ```
 
-`settingsPassword` 與遠端存取密碼因安全考量而省略；其餘則屬於 Read API 的缺口，已連同 `office_hours` 向 Neat 回報。
 
 ### 涵蓋率摘要
 
