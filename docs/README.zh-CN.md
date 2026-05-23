@@ -103,24 +103,26 @@ CSV 每台设备一行。列为所有设备键的并集，按字母顺序排列�
 
 ```
 neat-pulse-exporter/
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # Syntax check + smoke test (Node 18/20/22)
 ├── docs/
-│   ├── api_findings.md        # Pulse API 调查记录
 │   ├── README.ja.md           # 日本語
 │   ├── README.ko.md           # 한국어
 │   ├── README.zh-TW.md        # 繁體中文
-│   └── README.zh-CN.md        # 此文件
-├── examples/
-│   └── sample_output_columns.txt   # CSV 列示例清单
+│   └── README.zh-CN.md        # 简体中文
 ├── public/
-│   └── index.html        # Web UI（无需构建步骤）
+│   └── index.html        # Single-file UI (no build step)
 ├── src/
-│   └── server.js         # Express 服务器 + Pulse API 客户端
+│   └── server.js         # Express server + Pulse API client
+├── .dockerignore
 ├── .env.example
 ├── .gitignore
 ├── CHANGELOG.md
+├── Dockerfile
 ├── LICENSE
 ├── package.json
-└── README.md             # English
+└── README.md
 ```
 
 ## 故障排除
