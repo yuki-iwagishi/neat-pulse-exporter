@@ -103,24 +103,26 @@ CSV はデバイス 1 台につき 1 行です。列はすべてのデバイス�
 
 ```
 neat-pulse-exporter/
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # Syntax check + smoke test (Node 18/20/22)
 ├── docs/
-│   ├── api_findings.md        # Pulse API の調査記録
-│   ├── README.ja.md           # このファイル
+│   ├── README.ja.md           # 日本語
 │   ├── README.ko.md           # 한국어
 │   ├── README.zh-TW.md        # 繁體中文
 │   └── README.zh-CN.md        # 简体中文
-├── examples/
-│   └── sample_output_columns.txt   # CSV 列一覧サンプル
 ├── public/
-│   └── index.html        # Web UI（ビルド不要）
+│   └── index.html        # Single-file UI (no build step)
 ├── src/
-│   └── server.js         # Express サーバー + Pulse API クライアント
+│   └── server.js         # Express server + Pulse API client
+├── .dockerignore
 ├── .env.example
 ├── .gitignore
 ├── CHANGELOG.md
+├── Dockerfile
 ├── LICENSE
 ├── package.json
-└── README.md             # English
+└── README.md
 ```
 
 
