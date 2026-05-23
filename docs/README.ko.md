@@ -103,24 +103,26 @@ CSV는 디바이스 1대당 1행입니다. 열은 모든 디바이스의 키를 
 
 ```
 neat-pulse-exporter/
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # Syntax check + smoke test (Node 18/20/22)
 ├── docs/
-│   ├── api_findings.md        # Pulse API 조사 기록
 │   ├── README.ja.md           # 日本語
-│   ├── README.ko.md           # 이 파일
+│   ├── README.ko.md           # 한국어
 │   ├── README.zh-TW.md        # 繁體中文
 │   └── README.zh-CN.md        # 简体中文
-├── examples/
-│   └── sample_output_columns.txt   # CSV 열 목록 샘플
 ├── public/
-│   └── index.html        # Web UI (빌드 불필요)
+│   └── index.html        # Single-file UI (no build step)
 ├── src/
-│   └── server.js         # Express 서버 + Pulse API 클라이언트
+│   └── server.js         # Express server + Pulse API client
+├── .dockerignore
 ├── .env.example
 ├── .gitignore
 ├── CHANGELOG.md
+├── Dockerfile
 ├── LICENSE
 ├── package.json
-└── README.md             # English
+└── README.md
 ```
 
 ## 트러블슈팅
